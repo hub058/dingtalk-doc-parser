@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>钉钉文档解析工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.5.0/github-markdown.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 0.5rem;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .result-section.success {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+        }
+
+        .result-section.error {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .result-section.success .result-title {
+            color: #155724;
+        }
+
+        .result-section.error .result-title {
+            color: #721c24;
+        }
+
+        .result-content {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .file-path {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin: 0.75rem 0;
+        }
+
+        .preview-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.625rem 1.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.75rem;
+            transition: background 0.3s;
+        }
+
+        .preview-btn:hover {
+            background: #218838;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .preview-section {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .preview-section.show {
+            display: block;
+        }
+
+        .preview-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-header h3 {
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .close-preview {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .close-preview:hover {
+            background: #c82333;
+        }
+
+        .preview-content {
+            background: white;
+            padding: 2rem;
+            border: 2px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.85rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .tips {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tips-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .tips-content {
+            color: #856404;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .tips-content ol {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .tips-content li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 钉钉文档解析工具</h1>
+            <p>将钉钉文档转换为 Markdown 格式</p>
+        </div>
+
+        <div class="content">
+            <!-- 使用提示 -->
+            <div class="tips">
+                <div class="tips-title">💡 使用提示</div>
+                <div class="tips-content">
+                    <ol>
+                        <li>打开浏览器访问 <strong>https://alidocs.dingtalk.com</strong> 并登录</li>
+                        <li>按 <strong>F12</strong> 打开开发者工具 → <strong>Network</strong> 标签</li>
+                        <li>刷新页面，找到任意请求，复制 <strong>Cookie</strong> 请求头的值</li>
+                        <li>粘贴 Cookie 到下方输入框，输入文档地址，点击解析</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- 表单区域 -->
+            <div class="form-section">
+                <form id="parseForm">
+                    <div class="form-group">
+                        <label for="cookie">钉钉 Cookie（可选）</label>
+                        <textarea 
+                            id="cookie" 
+                            name="cookie" 
+                            placeholder="粘贴从浏览器复制的 Cookie（如果已配置环境变量可留空）"
+                            rows="3"></textarea>
+                        <small>如果已设置环境变量 DINGTALK_COOKIE 或本地文件，可以留空</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="documentUrl">钉钉文档地址 *</label>
+                        <input 
+                            type="text" 
+                            id="documentUrl" 
+                            name="documentUrl" 
+                            placeholder="https://alidocs.dingtalk.com/i/nodes/xxxxx"
+                            required>
+                        <small>支持完整 URL 或 Node ID</small>
+                    </div>
+
+                    <button type="submit" class="btn" id="submitBtn">
+                        开始解析
+                    </button>
+                </form>
+            </div>
+
+            <!-- 加载动画 -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在解析文档，请稍候...</p>
+            </div>
+
+            <!-- 结果区域 -->
+            <div class="result-section" id="resultSection">
+                <div class="result-title" id="resultTitle"></div>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+
+            <!-- 预览区域 -->
+            <div class="preview-section" id="previewSection">
+                <div class="preview-header">
+                    <h3>📄 Markdown 预览</h3>
+                    <button class="close-preview" onclick="closePreview()">关闭预览</button>
+                </div>
+                <div class="preview-content">
+                    <div class="markdown-body" id="markdownPreview"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            ©️ 钉钉文档解析工具 | Powered by Spring Boot 3 & Java 17
+        </div>
+    </div>
+
+    <!-- Markdown 解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    
+    <script>
+        const form = document.getElementById('parseForm');
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('resultSection');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultContent = document.getElementById('resultContent');
+        const previewSection = document.getElementById('previewSection');
+        const markdownPreview = document.getElementById('markdownPreview');
+        const submitBtn = document.getElementById('submitBtn');
+
+        let currentMarkdown = '';
+        let currentFilePath = '';
+
+        // 配置 marked
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: true,
+            mangle: false
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const cookie = document.getElementById('cookie').value.trim();
+            const documentUrl = document.getElementById('documentUrl').value.trim();
+
+            if (!documentUrl) {
+                showError('请输入文档地址');
+                return;
+            }
+
+            // 显示加载动画
+            loading.classList.add('show');
+            resultSection.classList.remove('show');
+            previewSection.classList.remove('show');
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/document/parse', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        documentUrl: documentUrl,
+                        cookie: cookie || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentFilePath = data.filePath;
+                    showSuccess(data.message, data.filePath);
+                    
+                    // 自动加载 Markdown 预览
+                    await loadMarkdownPreview(data.filePath);
+                } else {
+                    showError(data.error || '解析失败');
+                }
+            } catch (error) {
+                showError('网络请求失败: ' + error.message);
+            } finally {
+                loading.classList.remove('show');
+                submitBtn.disabled = false;
+            }
+        });
+
+        function showSuccess(message, filePath) {
+            resultSection.className = 'result-section show success';
+            resultTitle.textContent = '✅ 解析成功';
+            resultContent.innerHTML = `
+                <p>${message}</p>
+                <div class="file-path">📁 ${filePath}</div>
+                <button class="preview-btn" onclick="showPreview()">📖 预览 Markdown</button>
+            `;
+        }
+
+        function showError(message) {
+            resultSection.className = 'result-section show error';
+            resultTitle.textContent = '❌ 解析失败';
+            resultContent.innerHTML = `<p>${message}</p>`;
+        }
+
+        async function loadMarkdownPreview(filePath) {
+            try {
+                // 从文件路径读取 Markdown 内容
+                // 由于安全限制，我们需要通过后端 API 来读取文件
+                const response = await fetch(`/api/document/markdown?filePath=${encodeURIComponent(filePath)}`);
+                
+                if (response.ok) {
+                    currentMarkdown = await response.text();
+                } else {
+                    console.error('无法加载 Markdown 文件');
+                }
+            } catch (error) {
+                console.error('加载 Markdown 失败:', error);
+            }
+        }
+
+        function showPreview() {
+            if (!currentMarkdown) {
+                alert('Markdown 内容未加载，请稍后重试');
+                return;
+            }
+
+            // 使用 marked 解析 Markdown
+            const html = marked.parse(currentMarkdown);
+            markdownPreview.innerHTML = html;
+            
+            previewSection.classList.add('show');
+            previewSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closePreview() {
+            previewSection.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
