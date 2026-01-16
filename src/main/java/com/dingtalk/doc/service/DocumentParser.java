@@ -30,7 +30,7 @@ public class DocumentParser {
     private final DingTalkHttpClient httpClient;
     private final ObjectMapper objectMapper;
     
-    @Value("${dingtalk.api.base-url}")
+    @Value("${dingtalk.api.api-doc-base-url}")
     private String baseUrl;
     
     @Value("${dingtalk.api.document-data-url}")

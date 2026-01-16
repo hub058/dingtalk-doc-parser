@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>钉钉开放平台 API 测试工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.5.0/github-markdown.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .result-box {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-box pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        table th,
+        table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.85rem;
+        }
+
+        table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .tree-node {
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            border-left: 3px solid #667eea;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tree-node:hover {
+            background: #f8f9fa;
+        }
+
+        .tree-node.folder {
+            border-left-color: #ffc107;
+        }
+
+        .tree-children {
+            margin-left: 1.5rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.85rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border: 2px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-box p {
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 钉钉开放平台 API 测试工具</h1>
+            <p>测试钉钉知识库 API 接口功能</p>
+        </div>
+
+        <div class="content">
+            <!-- 配置信息 -->
+            <div class="info-box">
+                <p><strong>📌 使用说明：</strong></p>
+                <p>1. 确保已在 application.properties 中配置 AppKey、AppSecret 和 CorpId</p>
+                <p>2. 设置 dingtalk.api.enabled=true 启用 API 功能</p>
+                <p>3. 按顺序测试各个接口：Token → 知识库 → 节点 → 文档内容 → 解析 → 用户信息</p>
+            </div>
+
+            <!-- 1. AccessToken 管理 -->
+            <div class="section">
+                <div class="section-title">
+                    🔑 1. AccessToken 管理
+                    <span id="tokenStatus"></span>
+                </div>
+                <button class="btn" onclick="getToken()">获取 Token</button>
+                <button class="btn btn-success" onclick="refreshToken()">刷新 Token</button>
+                <div id="tokenResult" class="result-box" style="display: none;"></div>
+            </div>
+
+            <!-- 2. 知识库列表 -->
+            <div class="section">
+                <div class="section-title">📚 2. 知识库列表</div>
+                <button class="btn" onclick="getWorkspaces()">获取知识库列表</button>
+                <div id="workspaceResult" class="result-box" style="display: none;"></div>
+                <div id="workspaceTable" class="table-container" style="display: none;"></div>
+            </div>
+
+            <!-- 3. 节点列表 -->
+            <div class="section">
+                <div class="section-title">📁 3. 节点列表</div>
+                <div class="form-group">
+                    <label for="workspaceId">知识库 ID</label>
+                    <input type="text" id="workspaceId" placeholder="从上方知识库列表中选择">
+                </div>
+                <div class="form-group">
+                    <label for="parentNodeId">父节点 ID（可选，留空获取根节点）</label>
+                    <input type="text" id="parentNodeId" placeholder="留空获取根节点">
+                </div>
+                <button class="btn" onclick="getNodes()">获取节点列表</button>
+                <div id="nodeResult" class="result-box" style="display: none;"></div>
+                <div id="nodeTree" style="margin-top: 1rem;"></div>
+            </div>
+
+            <!-- 4. 文档内容 -->
+            <div class="section">
+                <div class="section-title">📄 4. 文档内容</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="contentWorkspaceId">知识库 ID</label>
+                        <input type="text" id="contentWorkspaceId" placeholder="输入知识库 ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="contentNodeId">节点 ID</label>
+                        <input type="text" id="contentNodeId" placeholder="输入节点 ID">
+                    </div>
+                </div>
+                <button class="btn" onclick="getDocumentContent()">获取文档内容</button>
+                <div id="contentResult" class="result-box" style="display: none;"></div>
+            </div>
+
+            <!-- 5. 解析文档 -->
+            <div class="section">
+                <div class="section-title">🔄 5. 解析文档</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="parseWorkspaceId">知识库 ID</label>
+                        <input type="text" id="parseWorkspaceId" placeholder="输入知识库 ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="parseNodeId">节点 ID</label>
+                        <input type="text" id="parseNodeId" placeholder="输入节点 ID">
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="parseDocument()">解析单个文档</button>
+                <button class="btn btn-danger" onclick="parseAllDocuments()">批量解析整个知识库</button>
+                <div id="parseResult" class="result-box" style="display: none;"></div>
+            </div>
+
+            <!-- 6. 用户信息查询 -->
+            <div class="section">
+                <div class="section-title">👤 6. 用户信息查询</div>
+                <div class="form-group">
+                    <label for="userId">用户 ID</label>
+                    <input type="text" id="userId" placeholder="输入用户 ID">
+                </div>
+                <button class="btn" onclick="getUserByUserId()">获取用户详情</button>
+                <button class="btn btn-success" onclick="getUserUnionId()">获取 Unionid</button>
+                <div id="userResult" class="result-box" style="display: none;"></div>
+            </div>
+
+            <!-- 7. 根据手机号查询用户 -->
+            <div class="section">
+                <div class="section-title">📱 7. 根据手机号查询</div>
+                <div class="form-group">
+                    <label for="userMobile">手机号</label>
+                    <input type="text" id="userMobile" placeholder="输入手机号，例如：13800138000">
+                </div>
+                <button class="btn" onclick="getUserByMobile()">获取用户详情</button>
+                <button class="btn btn-success" onclick="getUserUnionIdByMobile()">获取 Unionid</button>
+                <div id="mobileUserResult" class="result-box" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            ©️ 钉钉文档解析工具 | Powered by Spring Boot 3 & Java 17
+        </div>
+    </div>
+
+    <script>
+        let currentWorkspaces = [];
+        let currentNodes = [];
+
+        // 工具函数：格式化 JSON
+        function formatJSON(obj) {
+            return JSON.stringify(obj, null, 2);
+        }
+
+        // 工具函数：显示结果
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.innerHTML = `<pre>${formatJSON(data)}</pre>`;
+            if (isError) {
+                element.style.borderColor = '#dc3545';
+            } else {
+                element.style.borderColor = '#28a745';
+            }
+        }
+
+        // 工具函数：显示加载状态
+        function showLoading(button) {
+            button.disabled = true;
+            button.innerHTML += '<span class="loading"></span>';
+        }
+
+        // 工具函数：隐藏加载状态
+        function hideLoading(button, originalText) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+
+        // 1. 获取 AccessToken
+        async function getToken() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch('/api/dingtalk/token');
+                const data = await response.json();
+                
+                showResult('tokenResult', data, !data.success);
+                
+                if (data.success) {
+                    updateTokenStatus(data.remainingTime);
+                }
+            } catch (error) {
+                showResult('tokenResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 刷新 AccessToken
+        async function refreshToken() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch('/api/dingtalk/token/refresh', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                showResult('tokenResult', data, !data.success);
+                
+                if (data.success) {
+                    updateTokenStatus(data.remainingTime);
+                }
+            } catch (error) {
+                showResult('tokenResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 更新 Token 状态显示
+        function updateTokenStatus(remainingTime) {
+            const statusElement = document.getElementById('tokenStatus');
+            const minutes = Math.floor(remainingTime / 60);
+            statusElement.innerHTML = `<span class="status-badge status-success">有效期剩余: ${minutes} 分钟</span>`;
+        }
+
+        // 2. 获取知识库列表
+        async function getWorkspaces() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch('/api/dingtalk/workspaces');
+                const data = await response.json();
+                
+                showResult('workspaceResult', data, !data.success);
+                
+                if (data.success && data.workspaces) {
+                    currentWorkspaces = data.workspaces;
+                    renderWorkspaceTable(data.workspaces);
+                }
+            } catch (error) {
+                showResult('workspaceResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 渲染知识库表格
+        function renderWorkspaceTable(workspaces) {
+            const container = document.getElementById('workspaceTable');
+            
+            if (workspaces.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>知识库名称</th>
+                            <th>知识库 ID</th>
+                            <th>类型</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            workspaces.forEach(ws => {
+                html += `
+                    <tr>
+                        <td>${ws.name}</td>
+                        <td><code>${ws.workspaceId}</code></td>
+                        <td>${ws.type || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-small" onclick="selectWorkspace('${ws.workspaceId}')">选择</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        // 选择知识库
+        function selectWorkspace(workspaceId) {
+            document.getElementById('workspaceId').value = workspaceId;
+            document.getElementById('contentWorkspaceId').value = workspaceId;
+            document.getElementById('parseWorkspaceId').value = workspaceId;
+        }
+
+        // 3. 获取节点列表
+        async function getNodes() {
+            const workspaceId = document.getElementById('workspaceId').value.trim();
+            const parentNodeId = document.getElementById('parentNodeId').value.trim();
+
+            if (!workspaceId) {
+                alert('请输入知识库 ID');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                let url = `/api/dingtalk/workspaces/${workspaceId}/nodes`;
+                if (parentNodeId) {
+                    url += `?parentNodeId=${parentNodeId}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                showResult('nodeResult', data, !data.success);
+                
+                if (data.success && data.nodes) {
+                    currentNodes = data.nodes;
+                    renderNodeTree(data.nodes);
+                }
+            } catch (error) {
+                showResult('nodeResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 渲染节点树
+        function renderNodeTree(nodes) {
+            const container = document.getElementById('nodeTree');
+            
+            if (nodes.length === 0) {
+                container.innerHTML = '<p style="color: #666;">没有找到节点</p>';
+                return;
+            }
+
+            let html = '<div style="background: white; padding: 1rem; border-radius: 8px; border: 2px solid #e0e0e0;">';
+            
+            nodes.forEach(node => {
+                const icon = node.type === 'folder' ? '📁' : '📄';
+                const typeClass = node.type === 'folder' ? 'folder' : 'file';
+                
+                html += `
+                    <div class="tree-node ${typeClass}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>${icon} ${node.name}</span>
+                            <div>
+                                <button class="btn btn-small" onclick="selectNode('${node.nodeId}', '${node.name}')">选择</button>
+                                ${node.type === 'file' ? `<button class="btn btn-small btn-success" onclick="quickParse('${node.workspaceId}', '${node.nodeId}')">快速解析</button>` : ''}
+                            </div>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">
+                            ID: <code>${node.nodeId}</code> | 类型: ${node.type}${node.docType ? ` (${node.docType})` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // 选择节点
+        function selectNode(nodeId, nodeName) {
+            document.getElementById('contentNodeId').value = nodeId;
+            document.getElementById('parseNodeId').value = nodeId;
+            alert(`已选择节点: ${nodeName}\nID: ${nodeId}`);
+        }
+
+        // 4. 获取文档内容
+        async function getDocumentContent() {
+            const workspaceId = document.getElementById('contentWorkspaceId').value.trim();
+            const nodeId = document.getElementById('contentNodeId').value.trim();
+
+            if (!workspaceId || !nodeId) {
+                alert('请输入知识库 ID 和节点 ID');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch(`/api/dingtalk/workspaces/${workspaceId}/nodes/${nodeId}/content`);
+                const data = await response.json();
+                
+                showResult('contentResult', data, !data.success);
+            } catch (error) {
+                showResult('contentResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 5. 解析单个文档
+        async function parseDocument() {
+            const workspaceId = document.getElementById('parseWorkspaceId').value.trim();
+            const nodeId = document.getElementById('parseNodeId').value.trim();
+
+            if (!workspaceId || !nodeId) {
+                alert('请输入知识库 ID 和节点 ID');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch(`/api/dingtalk/workspaces/${workspaceId}/nodes/${nodeId}/parse`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                showResult('parseResult', data, !data.success);
+            } catch (error) {
+                showResult('parseResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 快速解析（从节点树直接调用）
+        async function quickParse(workspaceId, nodeId) {
+            document.getElementById('parseWorkspaceId').value = workspaceId;
+            document.getElementById('parseNodeId').value = nodeId;
+            
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch(`/api/dingtalk/workspaces/${workspaceId}/nodes/${nodeId}/parse`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                showResult('parseResult', data, !data.success);
+                
+                // 滚动到结果区域
+                document.getElementById('parseResult').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                showResult('parseResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 批量解析整个知识库
+        async function parseAllDocuments() {
+            const workspaceId = document.getElementById('parseWorkspaceId').value.trim();
+
+            if (!workspaceId) {
+                alert('请输入知识库 ID');
+                return;
+            }
+
+            if (!confirm('确定要批量解析整个知识库吗？这可能需要较长时间。')) {
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch(`/api/dingtalk/workspaces/${workspaceId}/parse-all`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                showResult('parseResult', data, !data.success);
+            } catch (error) {
+                showResult('parseResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 6. 根据 userId 获取用户详情
+        async function getUserByUserId() {
+            const userId = document.getElementById('userId').value.trim();
+
+            if (!userId) {
+                alert('请输入用户 ID');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch(`/api/dingtalk/users/${userId}`);
+                const data = await response.json();
+                
+                showResult('userResult', data, !data.success);
+            } catch (error) {
+                showResult('userResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 根据 userId 获取 unionid
+        async function getUserUnionId() {
+            const userId = document.getElementById('userId').value.trim();
+
+            if (!userId) {
+                alert('请输入用户 ID');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch(`/api/dingtalk/users/${userId}/unionid`);
+                const data = await response.json();
+                
+                showResult('userResult', data, !data.success);
+            } catch (error) {
+                showResult('userResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 7. 根据手机号获取用户详情
+        async function getUserByMobile() {
+            const mobile = document.getElementById('userMobile').value.trim();
+
+            if (!mobile) {
+                alert('请输入手机号');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch('/api/dingtalk/users/getByMobile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mobile: mobile })
+                });
+                const data = await response.json();
+                
+                showResult('mobileUserResult', data, !data.success);
+            } catch (error) {
+                showResult('mobileUserResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 根据手机号获取 unionid
+        async function getUserUnionIdByMobile() {
+            const mobile = document.getElementById('userMobile').value.trim();
+
+            if (!mobile) {
+                alert('请输入手机号');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            showLoading(btn);
+
+            try {
+                const response = await fetch('/api/dingtalk/users/getUnionIdByMobile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mobile: mobile })
+                });
+                const data = await response.json();
+                
+                showResult('mobileUserResult', data, !data.success);
+            } catch (error) {
+                showResult('mobileUserResult', { error: error.message }, true);
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 页面加载时自动获取 Token 状态
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/api/dingtalk/token');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateTokenStatus(data.remainingTime);
+                }
+            } catch (error) {
+                console.error('获取 Token 状态失败:', error);
+            }
+        });
+    </script>
+</body>
+</html>
